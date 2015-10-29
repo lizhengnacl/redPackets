@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html style="font-size: 34.5px;">
+
+<head>
+    <title>《今日头条》你关心的,才是头条! - TouTiao.com</title>
+    <meta charset="utf-8">
+    <link rel="dns-prefetch" href="http://s0.pstatp.com/">
+    <link rel="dns-prefetch" href="http://s2.pstatp.com/">
+    <link rel="dns-prefetch" href="http://toutiao.com/">
+    <meta name="google-site-verification" content="N1Mmy9oxtXl-osJ42t8eKkf6Gj3NdFPm9dYdSEb7GFc">
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimum-scale=1.0, maximum-scale=1.0, minimal-ui">
+    <link rel="apple-touch-icon-precomposed" href="http://s2.pstatp.com/image/toutiao_mobile/icon_180_1.png">
+    <link rel="shortcut icon" href="http://s2.pstatp.com/image/toutiao_mobile/short_cut_icon_1.png" type="image/x-icon">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="description" content="《今日头条》(TouTiao.com)是一款会自动学习的资讯软件,它会聪明地分析你的兴趣爱好,自动为你推荐喜欢的内容,并且越用越懂你.你关心的,才是头条!">
+    <meta name="keywords" content="头条,头条网,今日头条">
+    <meta property="qc:admins" content="137036576341176375">
+    <meta name="baidu-tc-cerfication" content="f02c83ae32e698b1003fc31a62124a0b">
+    <meta name="baidu-site-verification" content="OcFyAv2MOv">
+    <meta name="360-site-verification" content="47aeb748c3c8384b89f75e48e2dc382c">
+    <meta name="shenma-site-verification" content="fb9077aff6d33201126008a82a5a0113_1432698248">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/red.css">
+    <style>
+    body {
+        background: #D43D3D;
+    }
+
+    .grabbed {
+        background: #eee;
+        color: red;
+    }
+    .telCanUse{
+        color: green;
+    }
+    </style>
+</head>
+
+<body class="i">
+    <script>
+    (function() {
+        function o() {
+            document.documentElement.style.fontSize = (document.documentElement.clientWidth > 414 ? 414 : document.documentElement.clientWidth) / 12 + "px"
+        }
+        var e = null;
+        window.addEventListener("resize", function() {
+            clearTimeout(e), e = setTimeout(o, 300)
+        }, !1), o()
+    })(window);
+    </script>
+    <div style="height:0px;overflow:hidden;">
+        <img src="img/weixinshare.png">
+    </div>
+    <div class="wrapper">
+        <div id="sd">
+            <div class="t-banner"><img src="img/header.png" alt=""></div>
+            <section class="content2">
+                <div class="result resulth5">
+                    <div class="result-inner success result-inner-usepri">
+                        <div class="number"><em class="rmb">￥</em><i id='_m'>^_^</i></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        <div class="content-bg">
+            <div class="info">
+                <div id='oldUser'>
+                    红包已放账户！
+                    <span id='telShow'></span>
+                </div>
+                <div id='newUser'>
+                    <span id='telInfo'>请输入手机号码</span>
+                    <input type="text" id='telInput'>
+                </div>
+            </div>
+            <input id="enveuse-btn" class="combtn downloadbtn" type="button" value="抢红包" disabled="disabled">
+            <section class="rule">
+                <h4 class="sec-sub-title">活动规则</h4>
+                <ul>
+                    <li>1.红包新老用户同享
+                    </li>
+                    <li>2.红包可与其他优惠叠加使用，首单支付红包不可叠加
+                    </li>
+                    <li>3.红包仅限在今日头条最新版客户端下进行的活动中使用
+                    </li>
+                    <li>4.使用红包时手机号码必须为抢红包时手机号码
+                    </li>
+                    <li>5.本活动最终解释权归今日头条所有</li>
+                </ul>
+            </section>
+        </div>
+    </div>
+    <script type="text/javascript" src='./js/zepto.min.js'></script>
+    <script type="text/javascript">
+    ;;
+    (function($) {
+        var _m = document.getElementById('_m'),
+            btn = document.getElementById('enveuse-btn'),
+            sd = document.getElementById('sd'),
+            telInput = document.getElementById('telInput'),
+            telShow = document.getElementById('telShow');
+        // 下拉刷新页面
+        sd.addEventListener("touchend", function() {
+            location.reload();
+        }, false);
+        // 用localStorage判断是否已经领取过
+        // localStorage._m localStorage._t
+        // 同时使用localStorage和服务器端验证，不过localStorage优先级更好，这样虽不能做到百分之百，但已经能覆盖绝大数情况
+
+        // 判断localStorage是否存在
+        function chargeLocalStorage(value) {
+            if (value === undefined || value === 'undefined') {
+                return false;
+            }
+            return true;
+        }
+
+        // 判断号码是否存在
+        function checkTheTel(tel, cb) {
+            $.ajax({
+                type: 'POST',
+                url: 'http://121.42.56.249:3000/tel',
+                data: {
+                    tel: tel
+                },
+                dataType: 'json',
+                success: function(data, status, xhr) {
+                    cb(data);
+                },
+                error: function() {}
+            });
+        }
+
+        // tel能使用按钮
+        function canUseButton(){
+            $('#enveuse-btn').attr('disabled', null);
+            $('#telInput').addClass('telCanUse');
+            $('#telInfo').html('号码正确');
+        }
+
+        // 不能使用按钮
+        function canNotUseButton(){
+            $('#enveuse-btn').attr('disabled', 'disabled');
+            $('#telInput').removeClass('telCanUse');
+            $('#telInfo').html('号码错误');
+        }
+
+        // 抢红包
+        function grabRedPackets(tel, cb){
+            $('#enveuse-btn').on('click', function(){
+                $.ajax({
+                    type: 'POST',
+                    url: 'http://121.42.56.249:3000/grab',
+                    data: {
+                        tel: tel
+                    },
+                    dataType: 'json',
+                    success: function(data, status, xhr) {
+                        cb(data);
+                    },
+                    error: function() {}
+                });
+            });
+        }
+        if (chargeLocalStorage(localStorage._m) && chargeLocalStorage(localStorage._t)) {
+            $('#_m').html(localStorage._m);
+            $('#newUser').hide();
+            $('#telShow').html(localStorage._t);
+            $('#enveuse-btn').attr('value', '^_^');
+            $('#enveuse-btn').addClass('grabbed');
+        } else {
+            var $oldUser = $('#oldUser'),
+                $newUser = $('#newUser'),
+                $telShow = $('#telShow'),
+                $_m = $('#_m'),
+                $enveuseBtn = $('#enveuse-btn');
+                $telInput = $('#telInput');
+            $oldUser.hide();
+            $telInput.on('keyup', function() {
+                var text = $telInput.attr('value');
+                if (text.length < 11) {
+                    canNotUseButton();
+                    $('#telInfo').html('请输入手机号码');
+                    return;
+                } else if (text.length === 11) {
+                    // 发送请求判断号码正确性
+                    checkTheTel(text, function(data){
+                        // 号码正确后使按钮可用
+                        // 将字符串转换为数字
+                        if(+data.success === 1){
+                            canUseButton();
+                            // 点击按钮，抢红包
+                            grabRedPackets(text, function(data){
+                                // 改变页面样式
+                                $telShow.html(data.tel);
+                                $_m.html(data.money);
+                                $oldUser.show();
+                                $newUser.hide();
+                                $enveuseBtn.attr('value', '^_^');
+                                $enveuseBtn.addClass('grabbed');
+                                // 然后进行持久化操作
+                                localStorage._m = data.money;
+                                localStorage._t = data.tel;
+                            });
+                        }else{
+                            canNotUseButton();
+                        }
+                    });
+                } else {
+                    canNotUseButton();
+                    $telInput[0].value = text.slice(0, 11);
+                    $telInput.keyup();
+                }
+            });
+        }
+    })($);
+    </script>
+</body>
+
+</html>
