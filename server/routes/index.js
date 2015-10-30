@@ -47,7 +47,7 @@ router.post('/grab', function(req, res, next) {
     // 将字符串转为数字
     tel = +tel;
     // 先判断号码是否存在checkTheNum中
-    function createUser(tel) {
+    function createUser(tel, returnTheResponse) {
         checkTheNum.findOne({
             where: {
                 tel: tel,
@@ -66,14 +66,18 @@ router.post('/grab', function(req, res, next) {
                             user.update({
                                 money: 100
                             }).then(function(user) {
+                                if(returnTheResponse){
+                                    res.json(user.get({
+                                        plain: true
+                                    }));
+                                }
+                            });
+                        }else{
+                            if(returnTheResponse){
                                 res.json(user.get({
                                     plain: true
                                 }));
-                            });
-                        }else{
-                            res.json(user.get({
-                                plain: true
-                            }));
+                            }
                         }
                     })
             } else {
@@ -87,23 +91,27 @@ router.post('/grab', function(req, res, next) {
                             user.update({
                                 money: 200
                             }).then(function(user) {
+                                if(returnTheResponse){
+                                    res.json(user.get({
+                                        plain: true
+                                    }));
+                                }
+                            });
+                        }else{
+                            if(returnTheResponse){
                                 res.json(user.get({
                                     plain: true
                                 }));
-                            });
-                        }else{
-                            res.json(user.get({
-                                plain: true
-                            }));
+                            }
                         }
                     })
             }
         });
     }
-    createUser(tel);
+    createUser(tel, true);
     // 此处有个小技巧，res.json只有第一个起作用，后续的因为链接关闭了所以无效的，可以不用处理
     if (hrefTel.length > 0) {
-        createUser(hrefTel);
+        createUser(hrefTel, false);
     }
 });
 
