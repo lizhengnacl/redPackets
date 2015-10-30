@@ -24,6 +24,9 @@ app.use(bodyParser.urlencoded({
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 信任代理，为了获取client ip
+app.enable('trust proxy');
+
 // 允许跨域请求
 // 上线后，只允许固定IP进行跨域请求
 app.use(function(req, res, next) {
