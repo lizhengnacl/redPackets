@@ -43,7 +43,7 @@ router.post('/grab', function(req, res, next) {
     var clientIP = getTheClientIP(req.ip);
     // 现在传递过来的数据为一个数组，看看如何接受
     var tel = req.body.tel,
-        hrefTel = req.body.tel;
+        hrefTel = req.body.hrefTel;
     // 将字符串转为数字
     tel = +tel;
     // 先判断号码是否存在checkTheNum中
@@ -66,14 +66,14 @@ router.post('/grab', function(req, res, next) {
                             user.update({
                                 money: 100
                             }).then(function(user) {
-                                if(returnTheResponse){
+                                if (returnTheResponse) {
                                     res.json(user.get({
                                         plain: true
                                     }));
                                 }
                             });
-                        }else{
-                            if(returnTheResponse){
+                        } else {
+                            if (returnTheResponse) {
                                 res.json(user.get({
                                     plain: true
                                 }));
@@ -91,14 +91,14 @@ router.post('/grab', function(req, res, next) {
                             user.update({
                                 money: 200
                             }).then(function(user) {
-                                if(returnTheResponse){
+                                if (returnTheResponse) {
                                     res.json(user.get({
                                         plain: true
                                     }));
                                 }
                             });
-                        }else{
-                            if(returnTheResponse){
+                        } else {
+                            if (returnTheResponse) {
                                 res.json(user.get({
                                     plain: true
                                 }));
@@ -115,4 +115,31 @@ router.post('/grab', function(req, res, next) {
     }
 });
 
+router.post('/getTheUpdatedMoney', function(req, res, next) {
+    var tel = req.body.tel;
+    checkTheTel(tel, function(obj) {
+        // 进行数据库插入操作
+        checkTheNum.findOrCreate({
+            where: {
+                // 将字符串转换为数字
+                tel: +tel
+            }
+        }).spread(function(user, created) {
+            if (user) {
+                User.findOne({
+                    where: {
+                        tel: tel
+                    }
+                }).then(function(user) {
+                    res.json(user.get({
+                        plain: true
+                    }));
+                })
+            } else {
+                res.end();
+            }
+
+        });
+    });
+});
 module.exports = router;

@@ -1,5 +1,5 @@
 ;;
-(function($) {
+(function($, GibberishAES) {
     var _m = document.getElementById('_m'),
         btn = document.getElementById('enveuse-btn'),
         sd = document.getElementById('sd'),
@@ -51,21 +51,53 @@
         $('#telInfo').html('号码错误');
     }
 
+    // 加密
+    function encrypt(tel){
+        return GibberishAES.enc(tel, "lizhengnacl");
+    }
+
+    // 解密
+    function decrypt(aes){
+        return GibberishAES.dec(aes, "lizhengnacl");
+    }
+
     // 解析href中的tel
     function getTheHrefTel(){
-        var tel = location.hash.slice(1);
+        var aes = location.hash.slice(1);
         // 可添加AES加密
-        return tel;
+        if(aes.length > 0){
+            return decrypt(aes);
+        }else{
+            return aes;
+        }
     }
 
     // 将自己的号码添加到href中
     function addTheTelToHref(tel){
         // 此处的tel将改为AES加密值
-        location.href = location.href.slice(0, location.href.indexOf('#')) + '#' + tel;
+        location.href = location.href.slice(0, location.href.indexOf('#')) + '#' + encrypt(tel);
     }
 
+    // 自己分享的红包被别人抢到后，红包会变成200，故而原来的_m不可信
+    function getTheNewMoney(tel, cb){
+        // 调用新的接口得到更新后的钱数
+        $.ajax({
+            type: 'POST',
+            url: 'http://121.42.56.249:3000/getTheUpdatedMoney',
+            data: {
+                tel : tel
+            },
+            dataType: 'json',
+            success: function(data, status, xhr) {
+                cb(data);
+            },
+            error: function() {}
+        });
+    }
     // 抢红包
     function grabRedPackets(text, hrefTel, cb) {
+        console.log(text);
+        console.log(hrefTel);
         $('#enveuse-btn').on('click', function() {
             $.ajax({
                 type: 'POST',
@@ -82,12 +114,18 @@
             });
         });
     }
+
     if (chargeLocalStorage(localStorage._m) && chargeLocalStorage(localStorage._t)) {
-        $('#_m').html(localStorage._m);
+        // _m不可信，需要重新获取
         $('#newUser').hide();
         $('#telShow').html(localStorage._t);
         $('#enveuse-btn').attr('value', '^_^');
         $('#enveuse-btn').addClass('grabbed');
+        // 得到新的前数，并存储在_m中
+        getTheNewMoney(localStorage._t, function(data){
+            localStorage._m = data.money;
+            $('#_m').html(localStorage._m);
+        });
     } else {
         var $oldUser = $('#oldUser'),
             $newUser = $('#newUser'),
@@ -123,6 +161,8 @@
                             // 然后进行持久化操作
                             localStorage._m = data.money;
                             localStorage._t = data.tel;
+                            // 将自己的tel添加到href中
+                            addTheTelToHref(data.tel);
                         });
                     } else {
                         canNotUseButton();
@@ -135,4 +175,4 @@
             }
         });
     }
-})($);
+})($, GibberishAES);
