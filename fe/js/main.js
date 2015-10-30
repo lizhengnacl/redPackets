@@ -9,17 +9,6 @@
     sd.addEventListener("touchend", function() {
         location.reload();
     }, false);
-    // 用localStorage判断是否已经领取过
-    // localStorage._m localStorage._t
-    // 同时使用localStorage和服务器端验证，不过localStorage优先级更好，这样虽不能做到百分之百，但已经能覆盖绝大数情况
-
-    // 判断localStorage是否存在
-    function chargeLocalStorage(value) {
-        if (value === undefined || value === 'undefined') {
-            return false;
-        }
-        return true;
-    }
 
     // 判断号码是否存在
     function checkTheTel(tel, cb) {
@@ -52,59 +41,41 @@
     }
 
     // 加密
-    function encrypt(tel){
+    function encrypt(tel) {
         return GibberishAES.enc(tel, "lizhengnacl");
     }
 
     // 解密
-    function decrypt(aes){
+    function decrypt(aes) {
         return GibberishAES.dec(aes, "lizhengnacl");
     }
 
     // 解析href中的tel
-    function getTheHrefTel(){
+    function getTheHrefTel() {
         var aes = location.hash.slice(1);
         // 可添加AES加密
-        if(aes.length > 0){
+        if (aes.length > 0) {
             return decrypt(aes);
-        }else{
+        } else {
             return aes;
         }
     }
 
     // 将自己的号码添加到href中
-    function addTheTelToHref(tel){
+    function addTheTelToHref(tel) {
         // 此处的tel将改为AES加密值
         location.href = location.href.slice(0, location.href.indexOf('#')) + '#' + encrypt(tel);
     }
 
-    // 自己分享的红包被别人抢到后，红包会变成200，故而原来的_m不可信
-    function getTheNewMoney(tel, cb){
-        // 调用新的接口得到更新后的钱数
-        $.ajax({
-            type: 'POST',
-            url: 'http://121.42.56.249:3000/getTheUpdatedMoney',
-            data: {
-                tel : tel
-            },
-            dataType: 'json',
-            success: function(data, status, xhr) {
-                cb(data);
-            },
-            error: function() {}
-        });
-    }
     // 抢红包
     function grabRedPackets(text, hrefTel, cb) {
-        console.log(text);
-        console.log(hrefTel);
         $('#enveuse-btn').on('click', function() {
             $.ajax({
                 type: 'POST',
                 url: 'http://121.42.56.249:3000/grab',
                 data: {
-                    tel : text,
-                    hrefTel : hrefTel
+                    tel: text,
+                    hrefTel: hrefTel
                 },
                 dataType: 'json',
                 success: function(data, status, xhr) {
@@ -115,64 +86,50 @@
         });
     }
 
-    if (chargeLocalStorage(localStorage._m) && chargeLocalStorage(localStorage._t)) {
-        // _m不可信，需要重新获取
-        $('#newUser').hide();
-        $('#telShow').html(localStorage._t);
-        $('#enveuse-btn').attr('value', '^_^');
-        $('#enveuse-btn').addClass('grabbed');
-        // 得到新的前数，并存储在_m中
-        getTheNewMoney(localStorage._t, function(data){
-            localStorage._m = data.money;
-            $('#_m').html(localStorage._m);
-        });
-    } else {
-        var $oldUser = $('#oldUser'),
-            $newUser = $('#newUser'),
-            $telShow = $('#telShow'),
-            $_m = $('#_m'),
-            $enveuseBtn = $('#enveuse-btn');
-        $telInput = $('#telInput');
-        $oldUser.hide();
-        $telInput.on('keyup', function() {
-            var text = $telInput.attr('value');
-            if (text.length < 11) {
-                canNotUseButton();
-                $('#telInfo').html('请输入手机号码');
-                return;
-            } else if (text.length === 11) {
-                // 发送请求判断号码正确性
-                checkTheTel(text, function(data) {
-                    // 号码正确后使按钮可用
-                    // 将字符串转换为数字
-                    if (+data.success === 1) {
-                        canUseButton();
-                        // 点击按钮，抢红包
-                        // grab接口传递的数据
-                        var hrefTel = getTheHrefTel();
-                        grabRedPackets(text, hrefTel, function(data) {
-                            // 改变页面样式
-                            $telShow.html(data.tel);
-                            $_m.html(data.money);
-                            $oldUser.show();
-                            $newUser.hide();
-                            $enveuseBtn.attr('value', '^_^');
-                            $enveuseBtn.addClass('grabbed');
-                            // 然后进行持久化操作
-                            localStorage._m = data.money;
-                            localStorage._t = data.tel;
-                            // 将自己的tel添加到href中
-                            addTheTelToHref(data.tel);
-                        });
-                    } else {
-                        canNotUseButton();
-                    }
-                });
-            } else {
-                canNotUseButton();
-                $telInput[0].value = text.slice(0, 11);
-                $telInput.keyup();
-            }
-        });
-    }
+    var $oldUser = $('#oldUser'),
+        $newUser = $('#newUser'),
+        $telShow = $('#telShow'),
+        $_m = $('#_m'),
+        $enveuseBtn = $('#enveuse-btn');
+    $telInput = $('#telInput');
+    $oldUser.hide();
+    $telInput.on('keyup', function() {
+        var text = $telInput.attr('value');
+        if (text.length < 11) {
+            canNotUseButton();
+            $('#telInfo').html('请输入手机号码');
+            return;
+        } else if (text.length === 11) {
+            // 发送请求判断号码正确性
+            checkTheTel(text, function(data) {
+                // 号码正确后使按钮可用
+                // 将字符串转换为数字
+                if (+data.success === 1) {
+                    canUseButton();
+                    // 点击按钮，抢红包
+                    // grab接口传递的数据
+                    var hrefTel = getTheHrefTel();
+                    grabRedPackets(text, hrefTel, function(data) {
+                        // 改变页面样式
+                        $telShow.html(data.tel);
+                        $_m.html(data.money);
+                        $oldUser.show();
+                        $newUser.hide();
+                        $enveuseBtn.attr('value', '^_^');
+                        $enveuseBtn.addClass('grabbed');
+                        addTheTelToHref(data.tel);
+                    });
+                } else {
+                    canNotUseButton();
+                }
+            });
+        } else {
+            canNotUseButton();
+            $telInput[0].value = text.slice(0, 11);
+            $telInput.keyup();
+        }
+    });
+    localStorage.removeItem('_t');
+    localStorage.removeItem('_m');
+    // }
 })($, GibberishAES);
