@@ -19,5 +19,5 @@ var checkTheNum = sequelize.define('checkTheNum', {
     timestamps: false,
 })
 
-checkTheNum.sync({force : true});
-// module.exports = checkTheNum;
+// checkTheNum.sync({force : true});
+module.exports = checkTheNum;

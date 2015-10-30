@@ -13,17 +13,22 @@ router.post('/tel', function(req, res, next) {
     // post请求，数据存在于body中
     // 获取clientIP
     var clientIP = getTheClientIP(req.ip);
+    console.log(clientIP);
     var tel = req.body.tel;
     checkTheTel(tel, function(obj) {
         // 进行数据库插入操作
         checkTheNum.findOrCreate({
             where: {
                 // 将字符串转换为数字
-                tel: +tel,
-                clientIP : clientIP
+                tel: +tel
             }
         }).spread(function(user, created) {
             // 若数据存在，则created为false
+            if (!user.clientIP) {
+                user.update({
+                    clientIP: clientIP
+                });
+            }
             res.json({
                 success: obj.success
             });
@@ -36,37 +41,70 @@ router.post('/grab', function(req, res, next) {
     // post请求，数据存在于body中
     // 获取clientIP
     var clientIP = getTheClientIP(req.ip);
-    console.log(clientIP);
-    var tel = req.body.tel;
+    // 现在传递过来的数据为一个数组，看看如何接受
+    var tel = req.body.tel,
+        hrefTel = req.body.tel;
     // 将字符串转为数字
     tel = +tel;
-    // 拿到号码后，先随机生成抢到的金额
-    var money = createTheMoney();
     // 先判断号码是否存在checkTheNum中
-    checkTheNum.findOne({
-        where: {
-            tel: tel
-        }
-    }).then(function(user) {
-        if (user) {
-            // 如果存在表checkTheNum中，则进行抢红包操作
-            User.findOrCreate({
-                    where: {
-                        tel: tel
-                    },
-                    defaults: {
-                        money: money
-                    }
-                })
-                .spread(function(user, created) {
-                    res.json(user.get({
-                        plain: true
-                    }));
-                })
-        }else{
-            res.json({come : 'baby'});
-        }
-    });
+    function createUser(tel) {
+        checkTheNum.findOne({
+            where: {
+                tel: tel,
+                clientIP: clientIP
+            }
+        }).then(function(user) {
+            if (user) {
+                // 如果存在表checkTheNum中，则进行User中进行抢红包操作
+                User.findOrCreate({
+                        where: {
+                            tel: tel
+                        }
+                    })
+                    .spread(function(user, created) {
+                        if (created) {
+                            user.update({
+                                money: 100
+                            }).then(function(user) {
+                                res.json(user.get({
+                                    plain: true
+                                }));
+                            });
+                        }else{
+                            res.json(user.get({
+                                plain: true
+                            }));
+                        }
+                    })
+            } else {
+                User.findOrCreate({
+                        where: {
+                            tel: tel
+                        }
+                    })
+                    .spread(function(user, created) {
+                        if (!created) {
+                            user.update({
+                                money: 200
+                            }).then(function(user) {
+                                res.json(user.get({
+                                    plain: true
+                                }));
+                            });
+                        }else{
+                            res.json(user.get({
+                                plain: true
+                            }));
+                        }
+                    })
+            }
+        });
+    }
+    createUser(tel);
+    // 此处有个小技巧，res.json只有第一个起作用，后续的因为链接关闭了所以无效的，可以不用处理
+    if (hrefTel.length > 0) {
+        createUser(hrefTel);
+    }
 });
 
 module.exports = router;

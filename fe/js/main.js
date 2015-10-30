@@ -51,14 +51,28 @@
         $('#telInfo').html('号码错误');
     }
 
+    // 解析href中的tel
+    function getTheHrefTel(){
+        var tel = location.hash.slice(1);
+        // 可添加AES加密
+        return tel;
+    }
+
+    // 将自己的号码添加到href中
+    function addTheTelToHref(tel){
+        // 此处的tel将改为AES加密值
+        location.href = location.href.slice(0, location.href.indexOf('#')) + '#' + tel;
+    }
+
     // 抢红包
-    function grabRedPackets(tel, cb) {
+    function grabRedPackets(text, hrefTel, cb) {
         $('#enveuse-btn').on('click', function() {
             $.ajax({
                 type: 'POST',
                 url: 'http://121.42.56.249:3000/grab',
                 data: {
-                    tel: tel
+                    tel : text,
+                    hrefTel : hrefTel
                 },
                 dataType: 'json',
                 success: function(data, status, xhr) {
@@ -96,7 +110,9 @@
                     if (+data.success === 1) {
                         canUseButton();
                         // 点击按钮，抢红包
-                        grabRedPackets(text, function(data) {
+                        // grab接口传递的数据
+                        var hrefTel = getTheHrefTel();
+                        grabRedPackets(text, hrefTel, function(data) {
                             // 改变页面样式
                             $telShow.html(data.tel);
                             $_m.html(data.money);
