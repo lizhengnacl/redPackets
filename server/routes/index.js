@@ -14,6 +14,11 @@ router.post('/tel', function(req, res, next) {
     // 获取clientIP
     var clientIP = getTheClientIP(req.ip);
     var tel = req.body.tel;
+    if(tel.length !== 11){
+        res.json({
+            success: 0
+        });
+    }
     checkTheTel(tel, function(obj) {
         // 进行数据库插入操作
         checkTheNum.findOrCreate({
