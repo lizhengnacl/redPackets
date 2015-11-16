@@ -104,7 +104,7 @@
             checkTheTel(text, function(data) {
                 // 号码正确后使按钮可用
                 // 将字符串转换为数字
-                if (+data.success === 1) {
+                if (data.success === 1) {
                     canUseButton();
                     // 点击按钮，抢红包
                     // grab接口传递的数据
@@ -112,7 +112,7 @@
                     grabRedPackets(text, hrefTel, function(data) {
                         // 改变页面样式
                         $telShow.html(data.tel);
-                        $_m.html(data.money);
+                        $_m.html(data.money + '元');
                         $oldUser.show();
                         $newUser.hide();
                         $enveuseBtn.attr('value', '^_^');

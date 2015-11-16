@@ -1,12 +1,26 @@
 var request = require('request');
 
 module.exports = function(tel, cb) {
-    // 此处申请十个账号做储备
-    var href = 'http://api.k780.com:88/?app=phone.get&appkey=16017&sign=d73763079fd3bb600085e449dc16966d&format=json&phone=' + tel;
+    var arr = ['http://chongzhi.jd.com/json/order/search_searchPhone.action?mobile=', 'https://tcc.taobao.com/cc/json/mobile_tel_segment.htm?tel='];
+    // typeof tel === string  true
+    var str = arr[(tel.charAt(8) % 2)];
+    var href = str + tel;
     request(href, function(error, res, body) {
         if (!error && res.statusCode == 200) {
-            var obj = JSON.parse(body);
-            cb(obj);
+            var str = (body.charAt(0) === '_') ? 'catName' : 'providerName';
+            if (body.indexOf(str) !== -1) {
+                cb({
+                    success: 1
+                });
+            } else {
+                cb({
+                    success: 0
+                });
+            }
+        }else{
+            cb({
+                success: 0
+            });
         }
     })
 }

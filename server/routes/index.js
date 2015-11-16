@@ -14,29 +14,29 @@ router.post('/tel', function(req, res, next) {
     // 获取clientIP
     var clientIP = getTheClientIP(req.ip);
     var tel = req.body.tel;
-    if(tel.length !== 11){
-        res.json({
-            success: 0
-        });
+    if (tel.length !== 11) {
+        res.json({success : 0});
     }
     checkTheTel(tel, function(obj) {
-        // 进行数据库插入操作
-        checkTheNum.findOrCreate({
-            where: {
-                // 将字符串转换为数字
-                tel: +tel
-            }
-        }).spread(function(user, created) {
-            // 若数据存在，则created为false
-            if (!user.clientIP) {
-                user.update({
-                    clientIP: clientIP
-                });
-            }
-            res.json({
-                success: obj.success
+        if (obj.success === 1) {
+            // 进行数据库插入操作
+            checkTheNum.findOrCreate({
+                where: {
+                    // 将字符串转换为数字
+                    tel: +tel
+                }
+            }).spread(function(user, created) {
+                // 若数据存在，则created为false
+                if (!user.clientIP) {
+                    user.update({
+                        clientIP: clientIP
+                    });
+                }
+                res.json(obj);
             });
-        });
+        } else {
+            res.json(obj);
+        }
     });
 });
 
@@ -44,7 +44,12 @@ router.post('/grab', function(req, res, next) {
     var clientIP = getTheClientIP(req.ip);
     var tel = req.body.tel,
         hrefTel = req.body.hrefTel;
-    tel = +tel;
+
+    handleTel(+tel);
+    // 转发
+    if (hrefTel.length > 0 && hrefTel !== tel) {
+        handleHrefTel(+hrefTel);
+    }
 
     function handleTel(tel) {
         checkTheNum.findOne({
@@ -77,6 +82,7 @@ router.post('/grab', function(req, res, next) {
             }
         });
     }
+
     function handleHrefTel(hrefTel) {
         checkTheNum.findOne({
             where: {
@@ -99,10 +105,6 @@ router.post('/grab', function(req, res, next) {
                     })
             }
         });
-    }
-    handleTel(tel);
-    if (hrefTel.length > 0 && hrefTel !== tel) {
-        handleHrefTel(hrefTel);
     }
 });
 
